@@ -16,9 +16,9 @@ public interface TADList <E> {
     public int search(E data);
     public void insertFirst(E data);
     public void insertLast(E data);
-    public boolean remove(E data) throws ExceptionIsEmpty;
-    public void reverse() throws ExceptionIsEmpty; 
-    public boolean contains(E data) throws ExceptionIsEmpty;
+    public boolean remove(E data);
+    public void reverse(); 
+    public boolean contains(E data);
     public E getMax() throws ExceptionIsEmpty;
     public E getMin() throws ExceptionIsEmpty;
 }
