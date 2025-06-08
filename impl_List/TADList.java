@@ -9,7 +9,7 @@ import Excepciones.ExceptionIsEmpty;
  *
  * @param E el tipo de elementos que almacena la lista, que debe ser comparable.
  */
-public interface TADList <E> {
+public interface TADList <E> extends Iterable<E> {
     public boolean isEmptyList();
     public int length();
     public void destroyList();
