@@ -84,7 +84,7 @@ public class ListLinked <E extends Comparable<E>> implements TADList<E> {
         Node<E> actual = this.first;
     
         while (actual != null) {
-            if (actual.getData().compareTo(data) == 0) {
+            if (actual.getData().equals(data)) {
                 return index;
             }
             actual = actual.getNext();
@@ -299,6 +299,34 @@ public class ListLinked <E extends Comparable<E>> implements TADList<E> {
 
         this.first = auxList.first;
         this.last = auxList.last;
+    }
+    
+    /**
+     * Recupera el elemento almacenado en el primer nodo.
+     * @return el valor almacenado {@code E} en el primer nodo.
+     * @throws ExceptionIsEmpty si la lista esta vacia.
+     */
+    @Override
+    public E getFirst() throws ExceptionIsEmpty {
+        if(this.isEmptyList()) {
+            throw new ExceptionIsEmpty("Lista vacia");
+        }
+
+        return this.first.getData();
+    }
+
+    /**
+     * Recupera el elemento almacenado en el ultimo nodo nodo.
+     * @return el valor almacenado {@code E} en el ultimo nodo.
+     * @throws ExceptionIsEmpty si la lista esta vacia.
+     */
+    @Override
+    public E getLast() throws ExceptionIsEmpty {
+        if(this.isEmptyList()) {
+            throw new ExceptionIsEmpty("Lista vacia");
+        }
+
+        return this.last.getData();
     }
 
     //-> ToString

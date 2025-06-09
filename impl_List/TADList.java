@@ -3,7 +3,7 @@ package impl_List;
 import Excepciones.ExceptionIsEmpty;
 
 /**
- * Interfaz que define las operaciones básicas para una lista genérica.
+ * Interfaz que define las operaciones básicas para una lista genérica - Dequeue.
  * Proporciona métodos para verificar si la lista está vacía, obtener su tamaño,
  * destruir la lista, buscar, insertar, eliminar, entre otras.
  *
@@ -21,4 +21,6 @@ public interface TADList <E> extends Iterable<E> {
     public boolean contains(E data);
     public E getMax() throws ExceptionIsEmpty;
     public E getMin() throws ExceptionIsEmpty;
+    public E getFirst() throws ExceptionIsEmpty;
+    public E getLast() throws ExceptionIsEmpty;
 }
