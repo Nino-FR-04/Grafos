@@ -16,4 +16,5 @@ public interface TADGraph <E extends Comparable<E>> {
     public void removeVertex(E vertex) throws ExceptionIsEmpty,ExceptionElementIsNull,ExceptionElementNotFound;
     public void removeEdge(E vertOri, E vertDest) throws ExceptionIsEmpty,ExceptionElementIsNull,ExceptionElementNotFound;
     public void dfs(E vertex) throws ExceptionElementIsNull, ExceptionElementNotFound;
+    public void bfs(E vertex) throws ExceptionElementIsNull, ExceptionElementNotFound;
 }

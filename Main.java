@@ -1,6 +1,5 @@
 import impl_Graph.GraphLink;
 import impl_Graph.GraphLink.GraphType;
-import impl_List.ListLinked;
 
 public class Main {
     public static void main(String[] args) {
@@ -28,7 +27,7 @@ public class Main {
 
         System.out.println(g);
 
-        g.dfs(1);
+        g.dfs(2);
         g.removeEdge(1,3);
         System.out.println(g);
         /*
