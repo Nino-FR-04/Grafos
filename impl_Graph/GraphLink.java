@@ -101,16 +101,32 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         return (origen && destino);
     }
 
-    /** Inserta una arista bidireccional (grafo no dirigido). */
-    private void insertEdgeUndirected(E vertOri, E vertDest) {
+    /** 
+     * Retorna en un arreglo las referencias del vertice de Origen y Destiono
+     * @param vertOri vertice de origen
+     * @param vertDest vertice de destino
+     * @return Arreglo de vertices
+     */
+    @SuppressWarnings("unchecked")
+    private Vertex<E>[] getVertex(E vertOri, E vertDest) {
         Vertex<E> refOri = null;
         Vertex<E> refDest = null;
 
         for (Vertex<E> vertex : this.listVertex) {
-            if(vertex.getData().equals(vertOri)) refOri = vertex;
-            if(vertex.getData().equals(vertDest)) refDest = vertex;
-            if(refOri != null && refDest != null) break;
+            if (vertex.getData().equals(vertOri)) refOri = vertex;
+            if (vertex.getData().equals(vertDest)) refDest = vertex;
+            if (refOri != null && refDest != null) break;
         }
+
+        return (Vertex<E>[]) new Vertex[] { refOri, refDest };
+    }
+
+    /** Inserta una arista bidireccional (grafo no dirigido). */
+    private void insertEdgeUndirected(E vertOri, E vertDest) {
+
+        Vertex<E>[] vertices = getVertex(vertOri, vertDest);
+        Vertex<E> refOri = vertices[0];
+        Vertex<E> refDest = vertices[1];
 
         if (!this.edgeExists(refOri, refDest)) {
             refOri.getListAdj().insertLast(new Edge<>(refDest));
@@ -122,14 +138,10 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
 
     /** Inserta una arista unidireccional (grafo dirigido). */
     private void insertEdgeDirected(E vertOri, E vertDest) {
-        Vertex<E> refOri = null;
-        Vertex<E> refDest = null;
 
-        for (Vertex<E> vertex : this.listVertex) {
-            if(vertex.getData().equals(vertOri)) refOri = vertex;
-            if(vertex.getData().equals(vertDest)) refDest = vertex;
-            if(refOri != null && refDest != null) break;
-        }
+        Vertex<E>[] vertices = getVertex(vertOri, vertDest);
+        Vertex<E> refOri = vertices[0];
+        Vertex<E> refDest = vertices[1];
 
         if (!this.edgeExists(refOri, refDest)) {
             refOri.getListAdj().insertLast(new Edge<>(refDest));
@@ -175,14 +187,9 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
             throw new ExceptionElementIsNull("Un elemento(Vertice) es nulo");
         }
 
-        Vertex<E> refVert1 = null;
-        Vertex<E> refVert2 = null;
-
-        for (Vertex<E> vertex : this.listVertex) {
-            if(vertex.getData().equals(vert1)) refVert1 = vertex;
-            if(vertex.getData().equals(vert2)) refVert2 = vertex;
-            if(refVert1 != null && refVert2 != null) break;
-        }
+        Vertex<E>[] vertices = getVertex(vert1, vert2);
+        Vertex<E> refVert1 = vertices[0];
+        Vertex<E> refVert2 = vertices[1];
 
         if(refVert1 == null || refVert2 == null) return false;
 
@@ -242,10 +249,8 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
                     break;
                 }
             }
-
             if (removeRef != null) vertAux.getListAdj().remove(removeRef);
         }
-
         // Eliminar el vértice de la lista principal
         this.listVertex.remove(refVertex);
     }
@@ -266,10 +271,8 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
                     break;
                 }
             }
-
             if(edgeRemove != null) vertex.getListAdj().remove(edgeRemove);
         }
-
         this.listVertex.remove(refVertex);
     }
 
@@ -308,14 +311,10 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
      * Elimina una arista en un grafo no dirigido.
      */
     private void removeEdgeUndirected(E vertOri, E vertDest) {
-        Vertex<E> refOri = null;
-        Vertex<E> refDest = null;
 
-        for (Vertex<E> vertex : this.listVertex) {
-            if(vertex.getData().equals(vertOri)) refOri = vertex;
-            if(vertex.getData().equals(vertDest)) refDest = vertex;
-            if(refOri != null && refDest != null) break;
-        }
+        Vertex<E>[] vertices = getVertex(vertOri, vertDest);
+        Vertex<E> refOri = vertices[0];
+        Vertex<E> refDest = vertices[1];
 
         // Eliminar arista refOri -> refDest
         Edge<E> edgeRemove = null;
@@ -342,14 +341,10 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
      * Elimina una arista en un grafo dirigido.
      */
     private void removeEdgeDirected(E vertOri, E vertDest) {
-        Vertex<E> refOri = null;
-        Vertex<E> refDest = null;
 
-        for (Vertex<E> vertex : this.listVertex) {
-            if(vertex.getData().equals(vertOri)) refOri = vertex;
-            if(vertex.getData().equals(vertDest)) refDest = vertex;
-            if(refOri != null && refDest != null) break;
-        }
+        Vertex<E>[] vertices = getVertex(vertOri, vertDest);
+        Vertex<E> refOri = vertices[0];
+        Vertex<E> refDest = vertices[1];
 
         // Eliminar arista refOri -> refDest (solo una dirección)
         Edge<E> edgeRemove = null;
