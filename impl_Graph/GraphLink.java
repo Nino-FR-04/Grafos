@@ -72,6 +72,8 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         for (Vertex<E> vertex : this.listVertex) {
             if(vertex.getData().equals(vertOri)) origen = true;
             if(vertex.getData().equals(vertDest)) destino = true;
+
+            if(origen && destino) break;
         }
 
         return (origen && destino);
@@ -84,6 +86,9 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         for (Vertex<E> vertex : this.listVertex) {
             if(vertex.getData().equals(vertOri)) refOri = vertex;
             if(vertex.getData().equals(vertDest)) refDest = vertex;
+
+            if(refOri != null && refDest != null) break;
+
         }
 
         if (!this.edgeExists(refOri, refDest)) {
@@ -102,6 +107,7 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         for (Vertex<E> vertex : this.listVertex) {
             if(vertex.getData().equals(vertOri)) refOri = vertex;
             if(vertex.getData().equals(vertDest)) refDest = vertex;
+            if(refOri != null && refDest != null) break;
         }
 
         if (!this.edgeExists(refOri, refDest)) {
@@ -120,10 +126,38 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         return false;
     }
 
+    @Override
+    public boolean searchVertex(E data) throws ExceptionElementIsNull {
+        if(data == null) {
+            throw new ExceptionElementIsNull("El elemento es nulo");
+        }
+
+        Vertex<E> vertAux = new Vertex<>(data);
+        return this.listVertex.contains(vertAux);
+    }
+
+    @Override
+    public boolean searchEdge(E vert1, E vert2) throws ExceptionElementIsNull {
+        if(vert1 == null || vert2 == null) {
+            throw new ExceptionElementIsNull("Un elemento(Vertice) es nulo");
+        }
+
+        Vertex<E> refVert1 = null;
+        Vertex<E> refVert2 = null;
+
+        for (Vertex<E> vertex : this.listVertex) {
+            if(vertex.getData().equals(vert1)) refVert1 = vertex;
+            if(vertex.getData().equals(vert2)) refVert2 = vertex;
+            if(refVert1 != null && refVert2 != null) break;
+        }
+
+        if(refVert1 == null || refVert2 == null) return false;
+
+        return this.edgeExists(refVert1, refVert2);
+    }
+
     //toString
     public String toString() {
         return this.listVertex.toString();
     }
-
-
 }
