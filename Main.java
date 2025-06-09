@@ -4,9 +4,28 @@ import impl_Graph.GraphLink.GraphType;
 public class Main {
     public static void main(String[] args) {
         
-        GraphLink<Integer> g = new GraphLink<>(GraphType.DIRECTED);
+        GraphLink<Integer> g = new GraphLink<>(GraphType.UNDIRECTED);
 
-        // -> Test N° 1
+        g.insertVertex(1);
+        g.insertVertex(2);
+        g.insertVertex(3);
+        g.insertVertex(6);
+        g.insertVertex(7);
+        g.insertVertex(8);
+
+        g.insertEdge(1, 2);
+        g.insertEdge(1, 3);
+        g.insertEdge(2, 7);
+        g.insertEdge(3, 7);
+        g.insertEdge(2, 6);
+        g.insertEdge(7, 8);
+
+        System.out.println(g);
+        g.dfs(1);
+        g.bfs(1);
+
+
+        /*  Test N° 1
         g.insertVertex(1);
         g.insertVertex(2);
         g.insertVertex(3);
@@ -30,6 +49,7 @@ public class Main {
         g.dfs(2);
         g.removeEdge(1,3);
         System.out.println(g);
+        */
         /*
         g.removeVertex(4);
         System.out.println(g);

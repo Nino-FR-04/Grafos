@@ -3,6 +3,7 @@ package impl_Graph;
 import Excepciones.*;
 import impl_Graph.components.*;
 import impl_List.ListLinked;
+import impl_Queue.QueueLink;
 import impl_Graph.components.Edge.EdgeState;
 import impl_Graph.components.Vertex.VertexState;
 import impl_Stack.StackLink;
@@ -385,7 +386,7 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
 
         StackLink<Vertex<E>> stack = new StackLink<>();
         refVertActual.setVertexState(VertexState.VISITED);
-        System.out.println(refVertActual.getData());
+        System.out.print("\n" + refVertActual.getData());
         stack.push(refVertActual);
 
         while (!stack.isEmpty()) {
@@ -402,7 +403,7 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
                         // Descubrimiento
                         edge.setEdgeState(EdgeState.DISCOVERY);
                         next.setVertexState(VertexState.VISITED);
-                        System.out.println(next.getData());
+                        System.out.print(", " + next.getData());
                         stack.push(next);
                         foundUnvisited = true;
                         break; // seguimos por este nuevo vértice
@@ -443,7 +444,30 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
 
         if(refVertActual == null) throw new ExceptionElementNotFound("Elemento no encontrado");
 
+        QueueLink<Vertex<E>> queue = new QueueLink<>();
+        queue.enqueue(refVertActual);
+        refVertActual.setVertexState(VertexState.VISITED);
+        System.out.print("\n" + refVertActual.getData());
 
+        while (!queue.isEmpty()) {
+            Vertex<E> current = queue.dequeue();
+
+            for (Edge<E> edge : current.getListAdj()) {
+                Vertex<E> neighbor = edge.getRefDest();
+
+                if (edge.getEdgeState() == EdgeState.UNEXPLORED) {
+                    if (neighbor.getVertexState() == VertexState.UNEXPLORED) {
+                        edge.setEdgeState(EdgeState.DISCOVERY);
+                        neighbor.setVertexState(VertexState.VISITED);
+                        System.out.print(", " + neighbor.getData());
+                        queue.enqueue(neighbor);
+                    } else {
+                        edge.setEdgeState(EdgeState.CROSS);
+                    }
+                }
+            }
+        }
+        this.resetStates();
     }
 
     /**
