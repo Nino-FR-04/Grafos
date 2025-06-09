@@ -86,6 +86,6 @@ public class Edge <E extends Comparable<E>> implements Comparable<Edge<E>> {
         if(this.weight > -1) {
             return "(" + this.refDest.getData() + "-" + this.weight + ")";
         }
-        return "(" + this.refDest.getData() + "- , )";
+        return "(" + this.refDest.getData() + ", -)";
     }
 }
