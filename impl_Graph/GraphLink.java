@@ -5,7 +5,6 @@ import impl_Graph.components.*;
 import impl_List.ListLinked;
 import impl_Queue.QueueLink;
 import impl_Graph.components.Edge.EdgeState;
-import impl_Graph.components.Vertex.VertexState;
 import impl_Stack.StackLink;
 
 public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
@@ -15,7 +14,9 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
      */
     public enum GraphType {
         DIRECTED,
+        DIRECTED_WEIGHTED,
         UNDIRECTED,
+        UNDIRECTED_WEIGHTED
     }
 
     //Atributos
@@ -35,6 +36,7 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
     }
 
     //-->Metodos
+    //---------------------------------->Insercion
     /**
      * Inserta un nuevo vértice en el grafo.
      *
@@ -52,7 +54,6 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         if(this.listVertex.contains(newVertex)) {
             throw new ExceptionItemDuplicated("Valor Duplicado");
         }
-
         this.listVertex.insertLast(newVertex);
     }
 
@@ -63,9 +64,15 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
      * @param vertDest Vértice de destino.
      * @throws ExceptionElementNotFound Si alguno de los vértices no existe.
      * @throws ExceptionElementIsNull Si alguno de los parámetros es nulo.
+     * @throws ExceptionUnsupportedGraphTypeOperation Si la insercion es para un grafo no permitido {@code GraphType}
      */
     @Override
-    public void insertEdge(E vertOri, E vertDest) throws ExceptionElementNotFound, ExceptionElementIsNull {
+    public void insertEdge(E vertOri, E vertDest) throws ExceptionElementNotFound, ExceptionElementIsNull, ExceptionUnsupportedGraphTypeOperation {
+        if(this.graphType != GraphType.DIRECTED && 
+                this.graphType != GraphType.UNDIRECTED) {
+            throw new ExceptionUnsupportedGraphTypeOperation("Operacion no permitida para este tipo de grafo: " + this.graphType);
+        }
+        
         if(vertOri == null || vertDest == null) {
             throw new ExceptionElementIsNull("Un elemento(Vertice) es nulo");
         }
@@ -73,13 +80,71 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         if(!this.containsVertex(vertOri, vertDest)) throw new ExceptionElementNotFound("Un elemento(Vertice) no fue encontrado");
 
         if(this.graphType == GraphType.UNDIRECTED) {
-            this.insertEdgeUndirected(vertOri, vertDest);
+            this.insertEdgeUndirected(vertOri, vertDest,-1);
             return;
         }
 
-        this.insertEdgeDirected(vertOri, vertDest);
+        this.insertEdgeDirected(vertOri, vertDest,-1);
     }
 
+    /**
+     * Inserta una arista con peso entre dos vértices.
+     *
+     * @param vertOri Vértice de origen.
+     * @param vertDest Vértice de destino.
+     * @throws ExceptionElementNotFound Si alguno de los vértices no existe.
+     * @throws ExceptionElementIsNull Si alguno de los parámetros es nulo.
+     * @throws ExceptionUnsupportedGraphTypeOperation Si la insercion es para un grafo no permitido {@code GraphType}
+     */
+    public void insertEdgeWeighted(E vertOri, E vertDest, int weight) throws ExceptionElementNotFound, ExceptionElementIsNull, ExceptionUnsupportedGraphTypeOperation {
+        if(this.graphType != GraphType.DIRECTED_WEIGHTED && 
+                this.graphType != GraphType.UNDIRECTED_WEIGHTED) {
+            throw new ExceptionUnsupportedGraphTypeOperation("Operacion no permitida para este tipo de grafo: " + this.graphType);
+        }
+        
+        if(vertOri == null || vertDest == null) {
+            throw new ExceptionElementIsNull("Un elemento(Vertice) es nulo");
+        }
+
+        if(!this.containsVertex(vertOri, vertDest)) throw new ExceptionElementNotFound("Un elemento(Vertice) no fue encontrado");
+
+        if(this.graphType == GraphType.UNDIRECTED_WEIGHTED) {
+            this.insertEdgeUndirected(vertOri, vertDest,weight);
+            return;
+        }
+        this.insertEdgeDirected(vertOri, vertDest,weight);
+    }
+
+    /** Inserta una arista bidireccional (grafo no dirigido). */
+    private void insertEdgeUndirected(E vertOri, E vertDest, int weight) {
+
+        Vertex<E>[] vertices = getVertex(vertOri, vertDest);
+        Vertex<E> refOri = vertices[0];
+        Vertex<E> refDest = vertices[1];
+
+        if (!this.edgeExists(refOri, refDest)) {
+            refOri.getListAdj().insertLast(new Edge<>(refDest,weight));
+            refDest.getListAdj().insertLast(new Edge<>(refOri,weight));
+            return;
+        }
+        //System.out.println("Si existe");
+    }
+
+    /** Inserta una arista unidireccional (grafo dirigido). */
+    private void insertEdgeDirected(E vertOri, E vertDest, int weight) {
+
+        Vertex<E>[] vertices = getVertex(vertOri, vertDest);
+        Vertex<E> refOri = vertices[0];
+        Vertex<E> refDest = vertices[1];
+
+        if (!this.edgeExists(refOri, refDest)) {
+            refOri.getListAdj().insertLast(new Edge<>(refDest,weight));
+            return;
+        }
+        //System.out.println("Si existe");
+    }
+
+    //->Metodos de verificacion
     /**
      * Verifica si ambos vértices existen en el grafo.
      *
@@ -101,6 +166,15 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         return (origen && destino);
     }
 
+    /** Verifica si existe una arista entre dos vértices. */
+    private boolean edgeExists(Vertex<E> origin, Vertex<E> destination) {
+        for (Edge<E> edge : origin.getListAdj()) {
+            if (edge.getRefDest().equals(destination)) return true;
+        }
+        return false;
+    }
+
+    //-> Metodos de obtencion de datos
     /** 
      * Retorna en un arreglo las referencias del vertice de Origen y Destiono
      * @param vertOri vertice de origen
@@ -119,43 +193,6 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         }
 
         return (Vertex<E>[]) new Vertex[] { refOri, refDest };
-    }
-
-    /** Inserta una arista bidireccional (grafo no dirigido). */
-    private void insertEdgeUndirected(E vertOri, E vertDest) {
-
-        Vertex<E>[] vertices = getVertex(vertOri, vertDest);
-        Vertex<E> refOri = vertices[0];
-        Vertex<E> refDest = vertices[1];
-
-        if (!this.edgeExists(refOri, refDest)) {
-            refOri.getListAdj().insertLast(new Edge<>(refDest));
-            refDest.getListAdj().insertLast(new Edge<>(refOri));
-            return;
-        }
-        //System.out.println("Si existe");
-    }
-
-    /** Inserta una arista unidireccional (grafo dirigido). */
-    private void insertEdgeDirected(E vertOri, E vertDest) {
-
-        Vertex<E>[] vertices = getVertex(vertOri, vertDest);
-        Vertex<E> refOri = vertices[0];
-        Vertex<E> refDest = vertices[1];
-
-        if (!this.edgeExists(refOri, refDest)) {
-            refOri.getListAdj().insertLast(new Edge<>(refDest));
-            return;
-        }
-        //System.out.println("Si existe");
-    }
-
-    /** Verifica si existe una arista entre dos vértices. */
-    private boolean edgeExists(Vertex<E> origin, Vertex<E> destination) {
-        for (Edge<E> edge : origin.getListAdj()) {
-            if (edge.getRefDest().equals(destination)) return true;
-        }
-        return false;
     }
 
     /**
@@ -196,6 +233,7 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         return this.edgeExists(refVert1, refVert2);
     }
 
+    //-> Metodos de Eliminacion
     /**
      * Elimina un vértice del grafo y todas sus conexiones.
      *
@@ -357,6 +395,7 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         if (edgeRemove != null) refOri.getListAdj().remove(edgeRemove);
     }
 
+    //-----> Metodos de recorridos
     /**
      * Realiza un recorrido en profundidad (DFS) desde un vértice.
      *
@@ -380,7 +419,7 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         if(refVertActual == null) throw new ExceptionElementNotFound("Elemento no encontrado");
 
         StackLink<Vertex<E>> stack = new StackLink<>();
-        refVertActual.setVertexState(VertexState.VISITED);
+        refVertActual.setVertexState(true);
         System.out.print("\n" + refVertActual.getData());
         stack.push(refVertActual);
 
@@ -394,10 +433,10 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
                 Vertex<E> next = edge.getRefDest();
 
                 if (edge.getEdgeState() == EdgeState.UNEXPLORED) {
-                    if (next.getVertexState() == VertexState.UNEXPLORED) {
+                    if (next.getVertexState() == false) {
                         // Descubrimiento
                         edge.setEdgeState(EdgeState.DISCOVERY);
-                        next.setVertexState(VertexState.VISITED);
+                        next.setVertexState(true);
                         System.out.print(", " + next.getData());
                         stack.push(next);
                         foundUnvisited = true;
@@ -441,21 +480,21 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
 
         QueueLink<Vertex<E>> queue = new QueueLink<>();
         queue.enqueue(refVertActual);
-        refVertActual.setVertexState(VertexState.VISITED);
+        refVertActual.setVertexState(true);
         System.out.print("\n" + refVertActual.getData());
 
         while (!queue.isEmpty()) {
             Vertex<E> current = queue.dequeue();
 
             for (Edge<E> edge : current.getListAdj()) {
-                Vertex<E> neighbor = edge.getRefDest();
+                Vertex<E> vecino = edge.getRefDest();
 
                 if (edge.getEdgeState() == EdgeState.UNEXPLORED) {
-                    if (neighbor.getVertexState() == VertexState.UNEXPLORED) {
+                    if (vecino.getVertexState() == false) {
                         edge.setEdgeState(EdgeState.DISCOVERY);
-                        neighbor.setVertexState(VertexState.VISITED);
-                        System.out.print(", " + neighbor.getData());
-                        queue.enqueue(neighbor);
+                        vecino.setVertexState(true);
+                        System.out.print(", " + vecino.getData());
+                        queue.enqueue(vecino);
                     } else {
                         edge.setEdgeState(EdgeState.CROSS);
                     }
@@ -470,7 +509,7 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
      */
     private void resetStates() {
         for (Vertex<E> v : this.listVertex) {
-            v.setVertexState(VertexState.UNEXPLORED);
+            v.setVertexState(false);
             for (Edge<E> e : v.getListAdj()) {
                 e.setEdgeState(EdgeState.UNEXPLORED);
             }

@@ -13,11 +13,21 @@ public class StackLink <E> implements StackTAD <E> {
 
     //Atributos
     private Node<E> tope;
+    private int size;
 
     //Constructor
     public StackLink() {
         this.tope = null;
+        this.size = 0;
     }
+
+    // -> getter -> size
+    /**
+     * 
+     * @return tamaño de la pila
+     * 
+     */
+    public int getSize() {return this.size;}
 
     //---------Implementacion de metodos de la interfaz
     /**
@@ -31,7 +41,7 @@ public class StackLink <E> implements StackTAD <E> {
         Node<E> nodo = new Node<>(obj);
         nodo.setNext(this.tope);
         this.tope = nodo;
-
+        this.size++;
     }
 
     /**
@@ -48,6 +58,7 @@ public class StackLink <E> implements StackTAD <E> {
         
         E data = this.tope.getData();
         this.tope = this.tope.getNext();
+        this.size--;
         return data;
 
     }
@@ -73,6 +84,7 @@ public class StackLink <E> implements StackTAD <E> {
     @Override
     public void destroyStack() throws ExceptionIsEmpty {
         this.tope = null;
+        this.size = 0;
     }
 
     /**

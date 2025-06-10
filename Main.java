@@ -4,7 +4,7 @@ import impl_Graph.GraphLink.GraphType;
 public class Main {
     public static void main(String[] args) {
         
-        GraphLink<Integer> g = new GraphLink<>(GraphType.UNDIRECTED);
+        GraphLink<Integer> g = new GraphLink<>(GraphType.DIRECTED_WEIGHTED);
 
         g.insertVertex(1);
         g.insertVertex(2);
@@ -12,13 +12,9 @@ public class Main {
         g.insertVertex(6);
         g.insertVertex(7);
         g.insertVertex(8);
+        g.insertEdge(null, null);
 
-        g.insertEdge(1, 2);
-        g.insertEdge(1, 3);
-        g.insertEdge(2, 7);
-        g.insertEdge(3, 7);
-        g.insertEdge(2, 6);
-        g.insertEdge(7, 8);
+        g.insertEdgeWeighted(1, 2, 0);
 
         System.out.println(g);
         g.dfs(1);

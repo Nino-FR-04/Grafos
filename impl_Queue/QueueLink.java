@@ -13,11 +13,13 @@ public class QueueLink <E> implements QueueTAD <E> {
     //Atributos
     private Node<E> first;
     private Node<E> last;
+    private int size;
 
     //Constructor
     public QueueLink() {
         this.first = null;
         this.last = null;
+        this.size = 0;
     }
 
     //-----------Implementacion de los metodos de la Interfaz
@@ -40,8 +42,17 @@ public class QueueLink <E> implements QueueTAD <E> {
             this.last.setNext(nodeAux);
             this.last = nodeAux;
         }
+
+        this.size++;
     }
     
+    /**
+     * 
+     * @return tamaño de la cola
+     * 
+     */
+    public int getSize() {return this.size;}
+
     /**
      * Elimina y retorna el primer elemento de la cola.
      * Si la cola está vacía, se lanza una excepción.
@@ -61,6 +72,7 @@ public class QueueLink <E> implements QueueTAD <E> {
             this.last = null;
         }
 
+        this.size--;
         return data;
     }
 
@@ -73,6 +85,7 @@ public class QueueLink <E> implements QueueTAD <E> {
     public void destroyQueue() {
         this.first = null;
         this.last = null;
+        this.size = 0;
     }
 
     /**
