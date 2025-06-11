@@ -4,7 +4,6 @@ import Excepciones.*;
 import impl_Graph.components.*;
 import impl_List.ListLinked;
 import impl_Queue.QueueLink;
-import impl_Graph.components.Edge.EdgeState;
 import impl_Stack.StackLink;
 
 public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
@@ -279,15 +278,7 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         for (Edge<E> edge : refVertex.getListAdj()) {
             Vertex<E> vertAux = edge.getRefDest();
 
-            Edge<E> removeRef = null;
-
-            for (Edge<E> edge2 : vertAux.getListAdj()) {
-                if (edge2.getRefDest().equals(refVertex)) {
-                    removeRef = edge2;
-                    break;
-                }
-            }
-            if (removeRef != null) vertAux.getListAdj().remove(removeRef);
+            vertAux.getListAdj().remove(new Edge<>(refVertex));
         }
         // Eliminar el vértice de la lista principal
         this.listVertex.remove(refVertex);
@@ -337,7 +328,7 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
             throw new ExceptionElementNotFound("Un elemento(Vertice) no fue encontrado");
         }
 
-        if(this.graphType == GraphType.UNDIRECTED) {
+        if(this.graphType == GraphType.UNDIRECTED || this.graphType == GraphType.UNDIRECTED_WEIGHTED) {
             this.removeEdgeUndirected(vertOri, vertDest);
             return;
         }
@@ -354,6 +345,10 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         Vertex<E> refOri = vertices[0];
         Vertex<E> refDest = vertices[1];
 
+        refOri.getListAdj().remove(new Edge<>(refDest));
+        refDest.getListAdj().remove(new Edge<>(refOri));
+
+        /*
         // Eliminar arista refOri -> refDest
         Edge<E> edgeRemove = null;
         for (Edge<E> edge : refOri.getListAdj()) {
@@ -373,6 +368,7 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
             }
         }
         if (edgeRemove != null) refDest.getListAdj().remove(edgeRemove);
+         */
     }
 
     /**
@@ -384,6 +380,9 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         Vertex<E> refOri = vertices[0];
         Vertex<E> refDest = vertices[1];
 
+        refOri.getListAdj().remove(new Edge<>(refDest));
+
+        /*
         // Eliminar arista refOri -> refDest (solo una dirección)
         Edge<E> edgeRemove = null;
         for (Edge<E> edge : refOri.getListAdj()) {
@@ -393,6 +392,7 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
             }
         }
         if (edgeRemove != null) refOri.getListAdj().remove(edgeRemove);
+        */
     }
 
     //-----> Metodos de recorridos
@@ -430,21 +430,17 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
             boolean foundUnvisited = false; 
 
             for (Edge<E> edge : current.getListAdj()) {
-                Vertex<E> next = edge.getRefDest();
 
-                if (edge.getEdgeState() == EdgeState.UNEXPLORED) {
-                    if (next.getVertexState() == false) {
-                        // Descubrimiento
-                        edge.setEdgeState(EdgeState.DISCOVERY);
-                        next.setVertexState(true);
-                        System.out.print(", " + next.getData());
-                        stack.push(next);
-                        foundUnvisited = true;
-                        break; // seguimos por este nuevo vértice
-                    } else {
-                        // Arista de retroceso
-                        edge.setEdgeState(EdgeState.BACK);
-                    }
+                if (!edge.getEdgeState() && !edge.getRefDest().getVertexState()) {
+                    // Descubrimiento
+                    edge.setEdgeState(true);
+                    edge.getRefDest().setVertexState(true);
+                    System.out.print(", " + edge.getRefDest().getData());
+                    stack.push(edge.getRefDest());
+                    foundUnvisited = true;
+                    break; // seguimos por este nuevo vértice
+                }else if (!edge.getEdgeState()) {
+                    edge.setEdgeState(true);
                 }
             }
 
@@ -489,14 +485,14 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
             for (Edge<E> edge : current.getListAdj()) {
                 Vertex<E> vecino = edge.getRefDest();
 
-                if (edge.getEdgeState() == EdgeState.UNEXPLORED) {
+                if (!edge.getEdgeState()) {
                     if (vecino.getVertexState() == false) {
-                        edge.setEdgeState(EdgeState.DISCOVERY);
+                        edge.setEdgeState(true);
                         vecino.setVertexState(true);
                         System.out.print(", " + vecino.getData());
                         queue.enqueue(vecino);
                     } else {
-                        edge.setEdgeState(EdgeState.CROSS);
+                        edge.setEdgeState(true);
                     }
                 }
             }
@@ -511,9 +507,120 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         for (Vertex<E> v : this.listVertex) {
             v.setVertexState(false);
             for (Edge<E> e : v.getListAdj()) {
-                e.setEdgeState(EdgeState.UNEXPLORED);
+                e.setEdgeState(false);
             }
         }
+    }
+
+    @Deprecated
+    /**
+     * Realiza una búsqueda en anchura (BFS) para encontrar un camino desde un vértice de origen
+     * hasta un vértice de destino. Devuelve el camino como una lista de datos.
+     *
+     * @param vertOri vértice de origen
+     * @param verDest vértice de destino
+     * @return lista con los datos del camino desde el origen hasta el destino,
+     *         o una lista vacía si no hay camino.
+     * @throws ExceptionElementIsNull si alguno de los elementos es nulo
+     * @throws ExceptionElementNotFound si alguno de los vértices no existe en el grafo
+     */
+    public ListLinked<E> bfsPath(E vertOri, E verDest) throws ExceptionElementIsNull, ExceptionElementNotFound {
+
+        if(vertOri == null || verDest == null) 
+            throw new ExceptionElementIsNull("El elemento es nulo");
+
+        Vertex<E>[] arr = this.getVertex(vertOri, verDest);
+        Vertex<E> refOri = arr[0];
+        Vertex<E> refDest = arr[1];
+
+        if(refOri == null || refDest == null) 
+            throw new ExceptionElementNotFound("Elemento(s) - Vertice(s) no encontrado(s)");
+
+        //Vertex<E> prev = null;
+        ListLinked<E> list = new ListLinked<>();
+        QueueLink<Vertex<E>> queue = new QueueLink<>();
+        queue.enqueue(refOri);
+        refOri.setVertexState(true);
+        list.insertLast(refOri.getData());
+
+        while (!queue.isEmpty()) {
+            Vertex<E> current = queue.dequeue();
+            //prev = current;
+
+            for (Edge<E> edge : current.getListAdj()) {
+                Vertex<E> vecino = edge.getRefDest();
+
+                if (!edge.getEdgeState()) {
+                    if (!vecino.getVertexState()) {
+                        edge.setEdgeState(true);
+                        vecino.setVertexState(true);
+                        list.insertLast(vecino.getData());
+                        queue.enqueue(vecino);
+                    } else {
+                        edge.setEdgeState(true);
+                    }
+                }
+            }
+        }
+        this.resetStates();
+
+        return list;
+    }
+
+    public ListLinked<E> shortPath(E vertOri, E vertDest) {
+        return new ListLinked<>();
+    }
+
+    /**
+     * Verifica si el grafo no dirigido es conexo.
+     * <p>
+     * Un grafo se considera conexo si existe al menos un camino entre
+     * cualquier par de vértices. (Usa BFS)
+     *
+     * @return {@code true} si el grafo es conexo; {@code false} si no lo es o si está vacío.
+     * @throws ExceptionUnsupportedGraphTypeOperation si el grafo no es de tipo no dirigido.
+     */
+    public boolean isConexo() throws ExceptionUnsupportedGraphTypeOperation {
+
+        if(this.graphType != GraphType.UNDIRECTED && 
+                this.graphType != GraphType.UNDIRECTED_WEIGHTED) {
+            throw new ExceptionUnsupportedGraphTypeOperation("Operacion no permitida para este tipo de grafo: " + this.graphType);
+        }
+
+        if(this.listVertex.isEmptyList()) return false;
+
+        // -> dfs
+        Vertex<E> vertOri = this.listVertex.getFirst();
+        int countVert = 1;
+
+        QueueLink<Vertex<E>> queue = new QueueLink<>();
+        queue.enqueue(vertOri);
+        vertOri.setVertexState(true);
+
+        while (!queue.isEmpty()) {
+            Vertex<E> current = queue.dequeue();
+
+            //Recorre sus lista de adyacencia
+            for (Edge<E> edge : current.getListAdj()) {
+                
+                if(!edge.getEdgeState()) {
+                    if(!edge.getRefDest().getVertexState()) {
+                        edge.setEdgeState(true);
+                        edge.getRefDest().setVertexState(true);
+                        queue.enqueue(edge.getRefDest());
+                        countVert++;
+                    }else {
+                        edge.setEdgeState(true);
+                    }
+                }
+            }
+        }
+        this.resetStates(); //-> Reiniciar estados
+        return countVert == this.listVertex.length();
+    }
+
+    public StackLink<E> dijsktra(E vertOri, E vertDest) {
+        return new StackLink<>();
     }
 
     //toString

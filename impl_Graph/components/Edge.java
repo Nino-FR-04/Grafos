@@ -21,7 +21,7 @@ public class Edge <E extends Comparable<E>> implements Comparable<Edge<E>> {
     //Atributos
     protected Vertex<E> refDest;
     protected int weight;
-    protected EdgeState state;
+    protected boolean state;
 
     //Constructores
     /**
@@ -33,7 +33,7 @@ public class Edge <E extends Comparable<E>> implements Comparable<Edge<E>> {
     public Edge(Vertex<E> refDest) {
         this.refDest = refDest;
         this.weight = -1;
-        this.state = EdgeState.UNEXPLORED;
+        this.state = false;
     }
 
     /**
@@ -46,15 +46,15 @@ public class Edge <E extends Comparable<E>> implements Comparable<Edge<E>> {
     public Edge(Vertex<E> refDest, int weight) {
         this.refDest = refDest;
         this.weight = weight;
-        this.state = EdgeState.UNEXPLORED;
+        this.state = false;
     }
 
     //Metodos -> Setters y Getters
     public Vertex<E> getRefDest() {return this.refDest;}
     public int getWeight() {return this.weight;}
     public void setWeight(int weight) {this.weight = weight;}
-    public EdgeState getEdgeState() {return this.state;}
-    public void setEdgeState(EdgeState state) {this.state = state;}
+    public boolean getEdgeState() {return this.state;}
+    public void setEdgeState(boolean state) {this.state = state;}
 
     //Equals
     /**
