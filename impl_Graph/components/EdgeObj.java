@@ -17,6 +17,14 @@ public class EdgeObj<V extends Comparable<V>,E> implements Comparable<EdgeObj<V,
         this.state = false;
     }
 
+    public EdgeObj(VertexObj<V> vert1, VertexObj<V> vert2) {
+        this.vertex1 = vert1;
+        this.vertex2 = vert2;
+        this.info = null;
+        this.position = -1;
+        this.state = false;
+    }
+
     //Setters y getters
     public VertexObj<V> getVert1() {return this.vertex1;}
     public VertexObj<V> getVert2() {return this.vertex2;}
@@ -38,9 +46,7 @@ public class EdgeObj<V extends Comparable<V>,E> implements Comparable<EdgeObj<V,
             (this.vertex1.equals(edge.vertex1) && this.vertex2.equals(edge.vertex2)) ||
             (this.vertex1.equals(edge.vertex2) && this.vertex2.equals(edge.vertex1));
 
-        boolean samePos = this.position == edge.position;
-
-        return samePos && sameVertex &&
+        return sameVertex &&
             (this.info == null ? edge.info == null : this.info.equals(edge.info));
     }
 

@@ -14,6 +14,13 @@ public class VertexObj <V extends Comparable<V>> implements Comparable<VertexObj
         this.state = false;
         this.origin = false;
     }
+    
+    public VertexObj(V info) {
+        this.info = info;
+        this.position = -1;
+        this.state = false;
+        this.origin = false;
+    }
 
     //Setters y getters
     public V getInfo() {return this.info;}
@@ -31,7 +38,7 @@ public class VertexObj <V extends Comparable<V>> implements Comparable<VertexObj
         if (obj == null || getClass() != obj.getClass()) return false;
 
         VertexObj<?> vertex = (VertexObj<?>) obj;
-        return this.position == vertex.position && this.info.equals(vertex.info);
+        return this.info.equals(vertex.info);
     }
 
     //-> compareTo

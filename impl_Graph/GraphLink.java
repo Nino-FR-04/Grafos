@@ -567,6 +567,7 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         return list;
     }
 
+    @Deprecated
     public ListLinked<E> shortPath(E vertOri, E vertDest) {
         return new ListLinked<>();
     }
@@ -619,6 +620,7 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         return countVert == this.listVertex.length();
     }
 
+    @Deprecated
     public StackLink<E> dijsktra(E vertOri, E vertDest) {
         return new StackLink<>();
     }
