@@ -48,7 +48,7 @@ public class PriorityQueue <E,P extends Comparable<P>> implements PriorityQueueT
         /*
         Caso 2: La prioridad de mi elemento es menor que la de mi ultimo elemento
         */
-        if(pri.compareTo(this.last.getData().getPriority()) <= 0) {
+        if(pri.compareTo(this.last.getData().getPriority()) >= 0) {
             this.last.setNext(newNode);
             this.last = newNode;
             this.size++;
@@ -58,7 +58,7 @@ public class PriorityQueue <E,P extends Comparable<P>> implements PriorityQueueT
         /*
         Caso 3: La prioridad de mi elemento es mayor que la de mi primer elemento
         */
-        if(pri.compareTo(this.first.getData().getPriority()) > 0) {
+        if(pri.compareTo(this.first.getData().getPriority()) < 0) {
             newNode.setNext(this.first);
             this.first = newNode;
             this.size++;
@@ -72,7 +72,7 @@ public class PriorityQueue <E,P extends Comparable<P>> implements PriorityQueueT
         Node<EntryNode<E,P>> currentNode = this.first;
         
         while(currentNode.getNext() != null && 
-            pri.compareTo(currentNode.getNext().getData().getPriority()) <= 0) {
+            pri.compareTo(currentNode.getNext().getData().getPriority()) >= 0) {
 
             currentNode = currentNode.getNext();
         }
@@ -81,10 +81,6 @@ public class PriorityQueue <E,P extends Comparable<P>> implements PriorityQueueT
         currentNode.setNext(newNode);
         this.size++;
     }
-
-    //---------------------------------
-    public Node<EntryNode<E,P>> getFirst() {return this.first;}
-    public Node<EntryNode<E,P>> getLast() {return this.last;}
     
     //-> Se desencola el primer elemento (mayor prioridad)
     @Override
@@ -179,7 +175,7 @@ public class PriorityQueue <E,P extends Comparable<P>> implements PriorityQueueT
 
         // 2. Reinsertar en la posición correcta según su prioridad
         if (this.isEmpty() || 
-            node.getData().getPriority().compareTo(this.first.getData().getPriority()) > 0) {
+            node.getData().getPriority().compareTo(this.first.getData().getPriority()) < 0) {
             // Insertar al inicio
             node.setNext(this.first);
             this.first = node;
@@ -190,7 +186,7 @@ public class PriorityQueue <E,P extends Comparable<P>> implements PriorityQueueT
         // Buscar la posición donde insertarlo
         Node<EntryNode<E, P>> current = this.first;
         while (current.getNext() != null && 
-            node.getData().getPriority().compareTo(current.getNext().getData().getPriority()) <= 0) {
+            node.getData().getPriority().compareTo(current.getNext().getData().getPriority()) >= 0) {
             current = current.getNext();
         }
 
