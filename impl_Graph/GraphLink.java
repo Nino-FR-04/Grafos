@@ -4,6 +4,7 @@ import Excepciones.*;
 import impl_Graph.components.*;
 import impl_List.ListLinked;
 import impl_Queue.QueueLink;
+import impl_Queue.PriorityQueue.PriorityQueue;
 import impl_Stack.StackLink;
 
 public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
@@ -259,7 +260,8 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
 
         if(refVertexDelete == null) throw new ExceptionElementNotFound("Elemento no encontrado");
 
-        if(this.graphType == GraphType.UNDIRECTED) {
+        if(this.graphType == GraphType.UNDIRECTED || 
+                    this.graphType == GraphType.UNDIRECTED_WEIGHTED) {
             this.removeVertexUndirected(refVertexDelete);
             return;
         }
@@ -511,8 +513,6 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
             }
         }
     }
-
-    @Deprecated
     /**
      * Realiza una búsqueda en anchura (BFS) para encontrar un camino desde un vértice de origen
      * hasta un vértice de destino. Devuelve el camino como una lista de datos.
@@ -524,52 +524,97 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
      * @throws ExceptionElementIsNull si alguno de los elementos es nulo
      * @throws ExceptionElementNotFound si alguno de los vértices no existe en el grafo
      */
-    public ListLinked<E> bfsPath(E vertOri, E verDest) throws ExceptionElementIsNull, ExceptionElementNotFound {
+    public ListLinked<E> bfsPath(E vertOri, E vertDest) throws ExceptionElementIsNull, ExceptionElementNotFound {
+        if (vertOri == null || vertDest == null)
+            throw new ExceptionElementIsNull("Elemento nulo");
 
-        if(vertOri == null || verDest == null) 
-            throw new ExceptionElementIsNull("El elemento es nulo");
-
-        Vertex<E>[] arr = this.getVertex(vertOri, verDest);
+        Vertex<E>[] arr = this.getVertex(vertOri, vertDest);
         Vertex<E> refOri = arr[0];
         Vertex<E> refDest = arr[1];
 
-        if(refOri == null || refDest == null) 
-            throw new ExceptionElementNotFound("Elemento(s) - Vertice(s) no encontrado(s)");
+        if (refOri == null || refDest == null)
+            throw new ExceptionElementNotFound("Elemento(s) no encontrado(s)");
 
-        //Vertex<E> prev = null;
-        ListLinked<E> list = new ListLinked<>();
         QueueLink<Vertex<E>> queue = new QueueLink<>();
+        ListLinked<Vertex<E>> visitados = new ListLinked<>();
+        ListLinked<Vertex<E>> padres = new ListLinked<>();
+
         queue.enqueue(refOri);
+        visitados.insertLast(refOri);
+        padres.insertLast(null); // el origen no tiene padre
         refOri.setVertexState(true);
-        list.insertLast(refOri.getData());
 
         while (!queue.isEmpty()) {
-            Vertex<E> current = queue.dequeue();
-            //prev = current;
+            Vertex<E> actual = queue.dequeue();
 
-            for (Edge<E> edge : current.getListAdj()) {
+            if (actual.equals(refDest)) break;
+
+            for (Edge<E> edge : actual.getListAdj()) {
                 Vertex<E> vecino = edge.getRefDest();
-
-                if (!edge.getEdgeState()) {
-                    if (!vecino.getVertexState()) {
-                        edge.setEdgeState(true);
-                        vecino.setVertexState(true);
-                        list.insertLast(vecino.getData());
-                        queue.enqueue(vecino);
-                    } else {
-                        edge.setEdgeState(true);
-                    }
+                if (!vecino.getVertexState()) {
+                    vecino.setVertexState(true);
+                    queue.enqueue(vecino);
+                    visitados.insertLast(vecino);
+                    padres.insertLast(actual);
                 }
             }
         }
-        this.resetStates();
 
-        return list;
+        // Reconstrucción del camino 
+        ListLinked<E> camino = new ListLinked<>();
+        Vertex<E> actual = refDest;
+
+        while (actual != null) {
+            camino.insertFirst(actual.getData());
+
+            // Buscar el índice de 'actual' en 'visitados'
+            int index = -1;
+            int i = 0;
+            for (Vertex<E> v : visitados) {
+                if (v.equals(actual)) {
+                    index = i;
+                    break;
+                }
+                i++;
+            }
+
+            if (index == -1) break;
+
+            // Obtener el padre en la misma posición
+            int j = 0;
+            Vertex<E> padre = null;
+            for (Vertex<E> v : padres) {
+                if (j == index) {
+                    padre = v;
+                    break;
+                }
+                j++;
+            }
+
+            actual = padre;
+        }
+
+        // Verifica si la ruta es válida
+        if (!camino.isEmptyList() && !camino.getFirst().equals(vertOri)) {
+            camino = new ListLinked<>();
+        }
+
+        this.resetStates();
+        return camino;
     }
 
-    @Deprecated
-    public ListLinked<E> shortPath(E vertOri, E vertDest) {
-        return new ListLinked<>();
+    /**
+     * Metodo encargado de retornar el camino mas corto en terminos de arista
+     * usando BFSPath.
+     * 
+     * @param vertOri
+     * @param vertDest
+     * @return camino mas corto entre un vertice y otro.
+     * @throws ExceptionElementIsNull
+     * @throws ExceptionElementNotFound
+     */
+    public ListLinked<E> shortPath(E vertOri, E vertDest) throws ExceptionElementIsNull, ExceptionElementNotFound{
+        return this.bfsPath(vertOri, vertDest);
     }
 
     /**
@@ -590,7 +635,7 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
 
         if(this.listVertex.isEmptyList()) return false;
 
-        // -> dfs
+        // -> bfs
         Vertex<E> vertOri = this.listVertex.getFirst();
         int countVert = 1;
 
@@ -620,9 +665,130 @@ public class GraphLink <E extends Comparable<E>> implements TADGraph<E> {
         return countVert == this.listVertex.length();
     }
 
-    @Deprecated
-    public StackLink<E> dijsktra(E vertOri, E vertDest) {
-        return new StackLink<>();
+    /**
+     * Metodo encargado de retornar la ruta minima desde un vertice a otro.
+     * 
+     * @param vertOri
+     * @param vertDest
+     * @return Stack con la ruta minima de un punto a otro
+     * @throws ExceptionUnsupportedGraphTypeOperation si la operacion se realiza en un grafo no permitido
+     * @throws ExceptionElementIsNull si no de los vertices es nulo.
+     * @throws ExceptionElementNotFound si uno de los vertices no se encuentra en el grafo.
+     * 
+     */
+    public StackLink<E> dijkstra(E vertOri, E vertDest)
+            throws ExceptionUnsupportedGraphTypeOperation, ExceptionElementIsNull, ExceptionElementNotFound {
+
+        if (this.graphType != GraphType.DIRECTED_WEIGHTED &&
+            this.graphType != GraphType.UNDIRECTED_WEIGHTED) {
+            throw new ExceptionUnsupportedGraphTypeOperation(
+                "Operación no permitida para este tipo de grafo: " + this.graphType);
+        }
+
+        if (vertOri == null || vertDest == null) {
+            throw new ExceptionElementIsNull("Uno de los valores es nulo");
+        }
+
+        Vertex<E>[] vertex = this.getVertex(vertOri, vertDest);
+        Vertex<E> refOri = vertex[0];
+        Vertex<E> refDest = vertex[1];
+
+        if (refOri == null || refDest == null) {
+            throw new ExceptionElementNotFound("Uno de los elementos no fue encontrado");
+        }
+
+        // Inicialización
+        PriorityQueue<Vertex<E>, Integer> pq = new PriorityQueue<>();
+        ListLinked<Vertex<E>> visitados = new ListLinked<>();
+        ListLinked<Vertex<E>> padres = new ListLinked<>();
+
+        for (Vertex<E> vert : this.listVertex) {
+            vert.setDistance(Integer.MAX_VALUE);
+            vert.setVertexState(false);
+            pq.enqueue(vert, Integer.MAX_VALUE);
+        }
+
+        refOri.setDistance(0);
+        pq.updatePriority(refOri, 0);
+        visitados.insertLast(refOri);
+        padres.insertLast(null);  // el origen no tiene padre
+
+        while (!pq.isEmpty()) {
+            Vertex<E> u = pq.dequeue();
+            u.setVertexState(true);
+
+            if (u.equals(refDest)) break;
+
+            for (Edge<E> edge : u.getListAdj()) {
+                Vertex<E> v = edge.getRefDest();
+                if (v.getVertexState()) continue;
+
+                int newDist = u.getDistance() + edge.getWeight();
+                if (newDist < v.getDistance()) {
+                    v.setDistance(newDist);
+                    pq.updatePriority(v, newDist);
+
+                    // Eliminar padre anterior si ya está en las listas
+                    ListLinked<Vertex<E>> nuevosVisitados = new ListLinked<>();
+                    ListLinked<Vertex<E>> nuevosPadres = new ListLinked<>();
+
+                    int i = 0;
+                    for (Vertex<E> vis : visitados) {
+                        Vertex<E> padre = null;
+                        int j = 0;
+                        for (Vertex<E> p : padres) {
+                            if (j == i) {
+                                padre = p;
+                                break;
+                            }
+                            j++;
+                        }
+
+                        if (!vis.equals(v)) {
+                            nuevosVisitados.insertLast(vis);
+                            nuevosPadres.insertLast(padre);
+                        }
+
+                        i++;
+                    }
+
+                    visitados = nuevosVisitados;
+                    padres = nuevosPadres;
+
+                    visitados.insertLast(v);
+                    padres.insertLast(u);
+                }
+            }
+        }
+
+        // Reconstrucción del camino desde destino hasta origen
+        StackLink<E> camino = new StackLink<>();
+        Vertex<E> actual = refDest;
+
+        while (actual != null) {
+            camino.push(actual.getData());
+
+            // Buscar el padre en las listas sincronizadas
+            int index = 0;
+            Vertex<E> padre = null;
+            for (Vertex<E> vis : visitados) {
+                if (vis.equals(actual)) {
+                    int j = 0;
+                    for (Vertex<E> p : padres) {
+                        if (j == index) {
+                            padre = p;
+                            break;
+                        }
+                        j++;
+                    }
+                    break;
+                }
+                index++;
+            }
+            actual = padre;
+        }
+        this.resetStates();
+        return camino;
     }
 
     //toString
