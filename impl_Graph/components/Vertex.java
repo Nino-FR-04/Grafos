@@ -14,12 +14,14 @@ public class Vertex <E extends Comparable<E>> implements Comparable<Vertex<E>> {
     protected ListLinked<Edge<E>> listadj;
     // -> true si esta visitado, false si no lo esta
     protected boolean state;
+    protected int distance;
 
     //Constructor
     public Vertex(E data) {
         this.data = data;
         this.listadj = new ListLinked<Edge<E>>();
         this.state = false;
+        this.distance = -1;
     }
 
     //Metodos -> Setters y Getters
@@ -28,7 +30,8 @@ public class Vertex <E extends Comparable<E>> implements Comparable<Vertex<E>> {
     public ListLinked<Edge<E>> getListAdj() {return this.listadj;}
     public boolean getVertexState() {return this.state;}
     public void setVertexState(boolean state) {this.state = state;}
-    
+    public void setDistance(int distance) {this.distance = distance;}
+    public int getDistance() {return this.distance;}
 
     //Equals
     @Override
