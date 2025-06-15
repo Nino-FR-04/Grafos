@@ -3,9 +3,11 @@ package impl_Graph;
 import Excepciones.*;
 import impl_Graph.components.*;
 import impl_List.ListLinked;
+import impl_Queue.QueueLink;
+import impl_Stack.StackLink;
 
 /**
- * Grafo no dirigido - Otra implementacion de un grafo
+ * Grafo no dirigido - Implementacion basada en una estructura de aristas
  * @param V valor del vertice
  * @param E tipo de valor de la arista
  */
@@ -226,17 +228,146 @@ public class GraphListEdge <V extends Comparable<V>,E> implements TADGraph<V> {
         //System.out.println("No existe");
     }
 
+    /**
+     * Realiza un recorrido en profundidad (DFS) desde un vértice.
+     *
+     * @param vertex Vértice inicial.
+     * @throws ExceptionElementIsNull Si el vértice es nulo.
+     * @throws ExceptionElementNotFound Si el vértice no se encuentra.
+     */
     @Override
     public void dfs(V vertex) throws ExceptionElementIsNull, ExceptionElementNotFound {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'dfs'");
+        if(vertex == null) {
+            throw new ExceptionElementIsNull("El vertice es nulo");
+        }
+
+        VertexObj<V> vert = null;
+
+        //Busqueda del vertice
+        for (VertexObj<V> v : this.secVertex) {
+            if(v.getInfo().equals(vertex)) {
+                vert = v;
+                break;
+            }
+        }
+
+        if(vert == null) throw new ExceptionElementNotFound("El elemento no fue encontrado");
+
+        StackLink<VertexObj<V>> stack = new StackLink<>(); 
+        stack.push(vert);
+        System.out.print("\n[");
+
+        while (!stack.isEmpty()) {
+            
+            VertexObj<V> verAux = stack.pop();
+            System.out.print(" " + verAux.getInfo());
+
+            for (EdgeObj<V,E> edgeObj : this.secEdge) {
+                boolean found = edgeObj.getVert1().equals(verAux) || 
+                                edgeObj.getVert2().equals(verAux);
+
+                if(found && !edgeObj.getState()) {
+                    stack.push(this.nextVertex(edgeObj, verAux));
+                    verAux.setState(true);
+                    edgeObj.setState(true);
+                    break;
+                }
+            }
+        }
+
+        this.resetStates();
+        System.out.print("]");
     }
 
+    /**
+     * Verifica cual de las dos referencias de la arista es el origen
+     * y retorna en siguiente vertice
+     * 
+     * @param edge arista que sera analizada
+     * @param vertex vertice a verificar
+     * @return el vertice siguiente
+     * 
+     */
+    private VertexObj<V> nextVertex(EdgeObj<V,E> edge, VertexObj<V> vertex) {
+        if(edge.getVert1().equals(vertex)) {
+            
+            return edge.getVert2();
+        }
+        return edge.getVert1();
+    }
+
+    /**
+     * Realiza un recorrido en anchura (BFS) desde un vértice.
+     *
+     * @param vertex Vértice inicial.
+     * @throws ExceptionElementIsNull Si el vértice es nulo.
+     * @throws ExceptionElementNotFound Si el vértice no se encuentra.
+     */
     @Override
     public void bfs(V vertex) throws ExceptionElementIsNull, ExceptionElementNotFound {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'bfs'");
-    }    
+        if (vertex == null) {
+            throw new ExceptionElementIsNull("El elemento es nulo");
+        }
+
+        VertexObj<V> vert = null;
+
+        // Búsqueda del vértice inicial
+        for (VertexObj<V> v : this.secVertex) {
+            if (v.getInfo().equals(vertex)) {
+                vert = v;
+                break;
+            }
+        }
+
+        if (vert == null) {
+            throw new ExceptionElementNotFound("El elemento no fue encontrado");
+        }
+
+        QueueLink<VertexObj<V>> queue = new QueueLink<>();
+        ListLinked<VertexObj<V>> visited = new ListLinked<>();
+
+        queue.enqueue(vert);
+        visited.insertLast(vert);
+
+        System.out.print("\n[");
+
+        while (!queue.isEmpty()) {
+            VertexObj<V> verAux = queue.dequeue();
+            System.out.print(" " + verAux.getInfo());
+
+            for (EdgeObj<V, E> edgeObj : this.secEdge) {
+                boolean isNeighbor = edgeObj.getVert1().equals(verAux) || edgeObj.getVert2().equals(verAux);
+
+                if (isNeighbor && !edgeObj.getState()) {
+                    VertexObj<V> neighbor = this.nextVertex(edgeObj, verAux);
+
+                    if (!visited.contains(neighbor)) {
+                        queue.enqueue(neighbor);
+                        visited.insertLast(neighbor);
+                    }
+
+                    edgeObj.setState(true); // Marcar arista como visitada si se requiere
+                }
+            }
+        }
+
+        System.out.println(" ]");
+        this.resetStates();
+    }
+
+
+    /**
+     * Reinicia el estado de los vertices y aristas
+     */
+    private void resetStates() {
+        for (EdgeObj<V,E> edgeObj : this.secEdge) {
+            edgeObj.setState(false);
+        }
+
+        for (VertexObj<V> vertexObj : this.secVertex) {
+            vertexObj.setState(false);
+        }
+    }
 
     //toString
     /**
@@ -244,6 +375,7 @@ public class GraphListEdge <V extends Comparable<V>,E> implements TADGraph<V> {
      */
     @Override
     public String toString() {
-        return this.secEdge.toString();
+        return this.secVertex.toString() + "\n" + 
+                this.secEdge.toString();
     }
 }
